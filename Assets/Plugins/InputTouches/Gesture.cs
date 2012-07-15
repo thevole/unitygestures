@@ -259,6 +259,7 @@ public class Gesture : MonoBehaviour {
 	}
 	
 	public static void Swipe(SwipeInfo sw){
+		Debug.Log("In Gesture.Swipe - handler: " + (onSwipeE != null));
 		if(onSwipeE!=null) onSwipeE(sw);
 	}
 

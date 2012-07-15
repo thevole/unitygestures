@@ -7,12 +7,17 @@ public class TouchPlay : MonoBehaviour
 	public UILabel label;
 	public int puckLayer = 8;
 	public GameObject marker;
+	public GameObject marker2;
+	public GameObject marker3;
 	public GameObject markerDisc;
+	public int fuzziness = 50;
 	Transform lastPuck = null;
 	public Material baseMaterial;
 	float baseHeight = 0.0f;
 	
 	private bool isDragging = false;
+	
+	private Vector2 firstTouchPos;
 	
 	void DisplayText (string text)
 	{
@@ -34,8 +39,6 @@ public class TouchPlay : MonoBehaviour
 		Gesture.onTouchE += HandleGestureonTouchE;
 		Gesture.onTouchDownE += HandleGestureonTouchDownE;
 	}
-
-
 	
 	void OnDisable ()
 	{
@@ -44,28 +47,60 @@ public class TouchPlay : MonoBehaviour
 		Gesture.onMFDraggingE -= HandleDragging;
 		Gesture.onDraggingStartE -= HandleGestureonDraggingStartE;
 		Gesture.onDraggingEndE -= HandleGestureonDraggingEndE;
-		Gesture.onSwipeE -= HandleSwipe;
+		Gesture.onSwipeE -= HandleSwipe;		
 		Gesture.onTouchE -= HandleGestureonTouchE;
 		Gesture.onTouchDownE -= HandleGestureonTouchDownE;
 	}
 	
 	void ShowMarkerAt(Vector2 position)
 	{
+		ShowMarkerAt(position, 0);
+	}
+	
+	void ShowMarkerAt(Vector2 position, int markerIndex)
+	{
 		Camera mainCamera = Camera.main;
 		float pos = mainCamera.transform.position.y - baseHeight - 1.0f;
 		Vector3 worldPos = mainCamera.ScreenToWorldPoint(new Vector3 (position.x, position.y, pos));
-		marker.transform.position = worldPos;
+		GameObject theMarker = null;
+		switch(markerIndex) {
+		case 0:
+			theMarker = marker;
+			break;
+		case 1:
+			theMarker = marker2;
+			break;
+		case 2:
+			theMarker = marker3;
+			break;
+		default:
+			break;
+		}
+		theMarker.transform.position = worldPos;
+		Debug.Log("Marked " + markerIndex + " at " + position);
+	}
+	
+	bool TestTouchPoint(Vector2 pos)
+	{
+		float distance = Mathf.Abs(Vector2.Distance(firstTouchPos, pos));
+		return (distance < fuzziness);
 	}
 	
 	void HandleSwipe (SwipeInfo sw)
 	{
 		if (isDragging) return;
+		ShowMarkerAt(sw.startPoint, 1);
+		if (TestTouchPoint(sw.startPoint)) {
+			ShowMarkerAt(firstTouchPos, 2);
+			sw.startPoint = firstTouchPos;
+		}
 		Transform puck = PickObject (sw.startPoint);		
 		if (puck) {					
 			markerDisc.transform.position = puck.position;
 			ResetPuck();
 			DisplayText ("From: " + sw.startPoint + " to " + sw.endPoint + " Speed: " + sw.speed + " Angle: " + sw.angle);		
 			PuckMover mover = puck.GetComponent<PuckMover>();
+			Debug.Log("Moving puck " + sw.speed + " angle: " + sw.angle);
 			mover.Move(sw.speed, sw.angle);
 		}		
 	}
@@ -119,9 +154,9 @@ public class TouchPlay : MonoBehaviour
 		}
 			
 	}
+
 	
-	
-	void HandleGestureonTouchE (Vector2 pos)
+	void DeadenPuckAt(Vector2 pos)
 	{
 		Transform puck = PickObject(pos);
 		if (puck) {
@@ -129,10 +164,17 @@ public class TouchPlay : MonoBehaviour
 		}
 	}
 	
+	void HandleGestureonTouchE (Vector2 pos)
+	{
+		DeadenPuckAt(pos);
+	}
+	
 	
 	void HandleGestureonTouchDownE (Vector2 pos)
 	{
 		ShowMarkerAt(pos);
+		DeadenPuckAt(pos);
+		firstTouchPos = pos;
 	}
 	
 	Vector3 GetWorldPos (Vector2 screenPos)
@@ -144,6 +186,7 @@ public class TouchPlay : MonoBehaviour
 	
 	Transform PickObject (Vector2 pos)
 	{
+		Debug.Log("Probing " + pos);
 		Ray ray = Camera.mainCamera.ScreenPointToRay (pos);
 		RaycastHit hit;
 		int layerMask = 1 << puckLayer;
@@ -151,6 +194,7 @@ public class TouchPlay : MonoBehaviour
 		if (Physics.Raycast (ray, out hit, Mathf.Infinity, layerMask)) {
 			result = hit.transform;
 		}
+		if (result) Debug.Log("Picked puck at " + pos );
 		return result;
 	}
 

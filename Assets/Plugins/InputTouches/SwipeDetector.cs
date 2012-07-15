@@ -83,7 +83,7 @@ public class SwipeDetector : MonoBehaviour {
 			Vector2 curVector=curPos-lastPos;
 			
 			float mag=curVector.magnitude;
-			//Debug.Log(curPos+"   "+lastPos+"   "+mag);
+			Debug.Log(curPos+"   "+lastPos+"   "+mag);
 			
 			if(swipeState==_SwipeState.None && mag>0){
 				timeStartSwipe=Time.time;
@@ -151,7 +151,7 @@ public class SwipeDetector : MonoBehaviour {
 			Vector2 curVector=curPos-lastPos;
 			
 			float mag=curVector.magnitude;
-			//Debug.Log(curPos+"   "+lastPos+"   "+mag);
+			Debug.Log(curPos+"   "+lastPos+"   "+mag);
 			
 			if(swipeState==_SwipeState.None && mag>0){
 				//GameMessage.DisplayMessage("swipe start");
@@ -228,17 +228,18 @@ public class SwipeDetector : MonoBehaviour {
 		//Gesture.SwipeEnd(sw);
 		
 		if((swipeDir).magnitude<minDistance) {
-			//Debug.Log("too short");
+			Debug.Log("too short");
 			//GameMessage.DisplayMessage("too short");
 			return;
 		}
 			
 		//GameMessage.DisplayMessage("swipe end "+pos);
 		
-		Gesture.Swipe(sw);
+		Debug.Log("pre swipe at " + startPos);
 		
+		Gesture.Swipe(sw);		
 		
-		//Debug.Log("swipe");
+		Debug.Log("post swipe at " + startPos);
 		//GameMessage.DisplayMessage("swiped");
 	}
 	
