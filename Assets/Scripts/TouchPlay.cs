@@ -10,7 +10,8 @@ public class TouchPlay : MonoBehaviour
 	public GameObject marker2;
 	public GameObject marker3;
 	public GameObject markerDisc;
-	public int fuzziness = 50;
+	public int fuzziness = 40;
+	public UILabel fuzzinessLabel;
 	Transform lastPuck = null;
 	public Material baseMaterial;
 	float baseHeight = 0.0f;
@@ -50,6 +51,14 @@ public class TouchPlay : MonoBehaviour
 		Gesture.onSwipeE -= HandleSwipe;		
 		Gesture.onTouchE -= HandleGestureonTouchE;
 		Gesture.onTouchDownE -= HandleGestureonTouchDownE;
+	}
+	
+	public void OnSliderChange(float value) 
+	{
+		Debug.Log("Slider to " + value);
+		float delta = value * 40.0f;
+		fuzziness = Mathf.FloorToInt( 30.0f + delta );
+		fuzzinessLabel.text = "Fuzziness: " + fuzziness;
 	}
 	
 	void ShowMarkerAt(Vector2 position)
